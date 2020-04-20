@@ -3,7 +3,7 @@ import rospy
 import numpy as np 
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-
+import simple_navigation_goals
 
 
 def callback(data):
@@ -11,6 +11,7 @@ def callback(data):
     datay = []
     angle_min = data.angle_min
     angle_increment= data.angle_increment
+    move = simple_navigation_goals.SimpleNavigationGoals()
 #    rospy.loginfo(data.ranges)
     rospy.loginfo(len(data.ranges))
     for i in range(len(data.ranges)):
@@ -52,10 +53,11 @@ def callback(data):
 
     else:
         rospy.loginfo("item lost !!!!!")
-        twist = Twist()
-        twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0   
-        twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0
-        pub.publish(twist)
+#        twist = Twist()
+#	    twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0 
+#	    twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0  
+#	    pub.publish(twist)
+        move.go_to(0, 0, 0)
 
 def listener():
 
