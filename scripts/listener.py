@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import numpy as np 
+import time
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 import simple_navigation_goals
@@ -12,6 +13,7 @@ def callback(data):
     angle_min = data.angle_min
     angle_increment= data.angle_increment
     move = simple_navigation_goals.SimpleNavigationGoals()
+    twist = Twist()
 #    rospy.loginfo(data.ranges)
     rospy.loginfo(len(data.ranges))
     for i in range(len(data.ranges)):
@@ -23,26 +25,26 @@ def callback(data):
             angle = angle_min + angle_increment * i
             x = data.ranges[i] * np.cos(angle)
             y = data.ranges[i] * np.sin(angle)
-            if x > 0.05 and x < 1 and y > -0.5 and y < 0.5:
+            if x > 0.05 and x < 1 and y > -0.25 and y < 0.25:
     	        datax.append(x)
     	        datay.append(y)   
     x_moy = 0
     y_moy = 0 
     for i in range(len(datax)):    
-#        rospy.loginfo("x={}, y ={}".format(datax[i],datay[i])) 
+        #rospy.loginfo("x={}, y ={}".format(datax[i],datay[i])) 
         x_moy = x_moy + datax[i]
         y_moy = y_moy + datay[i]
     if len(datax)!= 0:
         x_moy = x_moy / len(datax)
         y_moy = y_moy / len(datay)
         rospy.loginfo("x={}, y ={}".format(x_moy,y_moy)) 
-        # on veut ramener le baricentre vers la zone d'interet : x = 0.75 et y = 0
-        erreur_x = x_moy - 0.25   # si erreur_x est positif on veut avancer et si erreur_x et negatif on veut reculer 
+        #on veut ramener le baricentre vers la zone d'interet : x = 0.75 et y = 0
+        erreur_x = x_moy - 0.15   # si erreur_x est positif on veut avancer et si erreur_x et negatif on veut reculer 
         erreur_y = y_moy - 0 # si erreur_y est et positif il faut tourner vers la gauche et si erreur_y et negatif il faut tourner vers la droite  
         k_l = 1
-        k_r = 2.5
-       # cmd_vel(erreur_x * k_l,erreur_y * k_r ) # to_do envoyer ces vitesses en s'inspirant du teleop_key
-        twist = Twist()
+        k_r = 10
+        #cmd_vel(erreur_x * k_l,erreur_y * k_r ) # to_do envoyer ces vitesses en s'inspirant du teleop_key
+
         twist.linear.x = erreur_x * k_l
         twist.linear.y = 0.0
         twist.linear.z = 0.0   
@@ -51,13 +53,9 @@ def callback(data):
         twist.angular.z = erreur_y * k_r
         pub.publish(twist)
 
-    else:
-        rospy.loginfo("item lost !!!!!")
-#        twist = Twist()
-#	    twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0 
-#	    twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0  
-#	    pub.publish(twist)
-        move.go_to(0, 0, 0)
+    
+
+    
 
 def listener():
 
